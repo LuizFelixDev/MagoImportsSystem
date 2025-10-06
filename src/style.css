@@ -114,6 +114,10 @@ body {
     background-color: #FFD700;
     color: #000;
 }
+#usuario {
+    background-color: #FFD700;
+    color: #000;
+}
 #realizar-venda {
     background: linear-gradient(45deg, #000, #333);
 }
@@ -130,8 +134,29 @@ body {
 #receitas-despesas:hover {
     color: var(--cor-secundaria);
 }
-.receitas-despesas:hover::before {
-    background: radial-gradient(circle, rgb(238, 234, 2) 0%, transparent 70%);
+#receitas-despesas:hover::before {
+    background: radial-gradient(circle, rgba(255, 254, 254, 0.288) 0%, transparent 70%);
+}
+
+#usuario:hover {
+    color: var(--cor-secundaria);
+}
+#usuario:hover::before {
+    background: radial-gradient(circle, rgba(255, 254, 254, 0.288) 0%, transparent 70%);
+}
+
+#relatar-vendas:hover {
+    color: var(--cor-secundaria);
+}
+#relatar-vendas:hover::before {
+    background: radial-gradient(circle, rgba(255, 254, 254, 0.288) 0%, transparent 70%);
+}
+
+#alterar-excuir-venda:hover {
+    color: var(--cor-secundaria);
+}
+#alterar-excuir-venda::before {
+    background: radial-gradient(circle, rgba(255, 254, 254, 0.288) 0%, transparent 70%);
 }
 
 .footer {
