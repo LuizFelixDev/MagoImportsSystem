@@ -2,11 +2,13 @@ import express, { Request, Response } from 'express';
 import { openDb } from './configDB.js'; 
 import { setupRoutes } from './routes/routes.js';
 import { Database } from 'sqlite';
+import cors from 'cors';
 
 const app = express();
 const PORT = process.env.PORT || 2020; 
 
 app.use(express.json());
+app.use(cors());
 
 async function startServer() {
   try {
@@ -27,7 +29,7 @@ async function startServer() {
     app.listen(PORT, () => {
       console.log(`Servidor rodando na porta ${PORT}`);
       console.log(`Rotas de CRUD para Produtos disponíveis em http://localhost:${PORT}/products`);
-      console.log(`Rotas de CRUD para Vendas disponíveis em http://localhost:${PORT}/sales`); // Linha atualizada
+      console.log(`Rotas de CRUD para Vendas disponíveis em http://localhost:${PORT}/sales`);
     });
 
   } catch (error) {
