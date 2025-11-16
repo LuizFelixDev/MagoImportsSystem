@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "start:dev": "tsx src/app.ts"
   },
@@ -18,8 +19,15 @@
   },
   "homepage": "https://github.com/LuizFelixDev/MagoImportsSystem#readme",
   "devDependencies": {
+    "@types/express": "^5.0.5",
+    "@types/node": "^24.10.1",
     "tsup": "^8.5.1",
     "tsx": "^4.20.6",
     "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^5.1.7"
   }
 }
