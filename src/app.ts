@@ -27,6 +27,7 @@ async function startServer() {
     app.listen(PORT, () => {
       console.log(`Servidor rodando na porta ${PORT}`);
       console.log(`Rotas de CRUD para Produtos disponíveis em http://localhost:${PORT}/products`);
+      console.log(`Rotas de CRUD para Vendas disponíveis em http://localhost:${PORT}/sales`); // Linha atualizada
     });
 
   } catch (error) {
