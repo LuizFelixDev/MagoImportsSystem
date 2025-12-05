@@ -7,7 +7,8 @@ import cors from 'cors';
 const app = express();
 const PORT = process.env.PORT || 2020; 
 
-app.use(express.json());
+// AUMENTO DO LIMITE: Adicionado { limit: '50mb' } para suportar imagens Base64 grandes
+app.use(express.json({ limit: '50mb' }));
 app.use(cors());
 
 async function startServer() {
