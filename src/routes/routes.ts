@@ -1,7 +1,7 @@
 import { Express } from 'express';
 import { Database } from 'sqlite';
 import { registerProductRoutes } from './products.js';
-import { registerSaleRoutes } from './sales.js'; 
+import { registerSalesRoutes } from './sales.js'; 
 import { registerReportRoutes } from './reports.js'; 
 
 function registerUserRoutes(app: Express, db: Database) {
@@ -10,7 +10,7 @@ function registerUserRoutes(app: Express, db: Database) {
 
 export function setupRoutes(app: Express, db: Database) {
     registerProductRoutes(app, db);
-    registerSaleRoutes(app, db); 
+    registerSalesRoutes(app, db); 
     registerReportRoutes(app, db); 
     
     registerUserRoutes(app, db); 

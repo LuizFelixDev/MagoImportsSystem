@@ -1,9 +1,11 @@
+// luizfelixdev/magoimportssystem/MagoImportsSystem-7ae1be07535a6e79aaf4db5f0d3528b48d817963/src/configDB.js
 import { open } from 'sqlite'
 import sqlite3 from 'sqlite3'; 
 
 export async function openDb () {
   const db = await open({
-    filename: '/home/luiz/Documentos/MagoImportsSystem/database.db', 
+    // ALTERAÇÃO AQUI: Use o caminho relativo para o database.db
+    filename: './database.db', 
     driver: sqlite3.Database
   });
 
