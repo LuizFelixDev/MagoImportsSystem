@@ -13,6 +13,7 @@ interface Product {
     cor?: string;
     tamanho?: string;
     quantidade_em_estoque: number;
+    estoque_minimo: number;
     preco: number;
     preco_promocional?: number;
     peso?: number;
@@ -34,7 +35,7 @@ export function registerProductRoutes(app: Express, db: Database) {
     app.post('/products', dbCheck, async (req: Request<{}, {}, Product>, res: Response) => {
         const { 
             nome, descricao, categoria, subcategoria, marca, modelo, material, cor, tamanho, 
-            quantidade_em_estoque, preco, preco_promocional, peso, imagens, ativo 
+            quantidade_em_estoque, estoque_minimo, preco, preco_promocional, peso, imagens, ativo 
         } = req.body;
         
         if (!nome || typeof preco !== 'number' || typeof quantidade_em_estoque !== 'number' || typeof ativo !== 'number') {
@@ -48,11 +49,11 @@ export function registerProductRoutes(app: Express, db: Database) {
             const result = await db.run(`
                 INSERT INTO products (
                     nome, descricao, categoria, subcategoria, marca, modelo, material, cor, tamanho, 
-                    quantidade_em_estoque, preco, preco_promocional, peso, imagens, data_de_cadastro, ativo
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    quantidade_em_estoque, estoque_minimo, preco, preco_promocional, peso, imagens, data_de_cadastro, ativo
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `, [
                 nome, descricao, categoria, subcategoria, marca, modelo, material, cor, tamanho,
-                quantidade_em_estoque, preco, preco_promocional, peso, imagensJson, data_de_cadastro, ativo
+                quantidade_em_estoque, estoque_minimo, preco, preco_promocional, peso, imagensJson, data_de_cadastro, ativo
             ]);
             
             if (!result || !result.lastID) { 
