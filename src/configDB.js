@@ -41,6 +41,16 @@ export async function openDb () {
         status_venda TEXT NOT NULL
     );
   `);
+
+  await db.exec(`
+    CREATE TABLE IF NOT EXISTS users (
+      id TEXT PRIMARY KEY,
+      email TEXT UNIQUE NOT NULL,
+      nome TEXT,
+      foto TEXT,
+      google_id TEXT UNIQUE
+    );
+  `);
   
   return db;
 }

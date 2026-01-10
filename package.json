@@ -29,6 +29,7 @@
     "@types/cors": "^2.8.19",
     "cors": "^2.8.5",
     "express": "^5.1.0",
+    "google-auth-library": "^10.5.0",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7"
   }
