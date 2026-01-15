@@ -48,7 +48,8 @@ export async function openDb () {
       email TEXT UNIQUE NOT NULL,
       nome TEXT,
       foto TEXT,
-      google_id TEXT UNIQUE
+      google_id TEXT UNIQUE,
+      status TEXT DEFAULT 'pendente'
     );
   `);
   
