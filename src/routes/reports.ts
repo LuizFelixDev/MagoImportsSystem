@@ -12,12 +12,7 @@ export function registerReportRoutes(app: Express, db: Database) {
     app.get('/reports/inventory/full', dbCheck, async (req: Request, res: Response) => {
         try {
             const allProducts = await db.all(`
-                SELECT 
-                    nome, 
-                    quantidade_em_estoque, 
-                    preco,
-                    estoque_minimo,
-                    data_criacao
+                SELECT id, nome, quantidade_em_estoque, preco, estoque_minimo, data_de_cadastro as data_criacao
                 FROM products 
                 WHERE ativo = 1
                 ORDER BY quantidade_em_estoque ASC
@@ -28,10 +23,10 @@ export function registerReportRoutes(app: Express, db: Database) {
             const isoDate = thirtyDaysAgo.toISOString();
 
             const stagnantProducts = await db.all(`
-                SELECT nome, quantidade_em_estoque, data_criacao 
+                SELECT nome, quantidade_em_estoque, data_de_cadastro as data_criacao 
                 FROM products 
-                WHERE ativo = 1 AND data_criacao <= ? AND quantidade_em_estoque > 0
-                ORDER BY data_criacao ASC
+                WHERE ativo = 1 AND data_de_cadastro <= ? AND quantidade_em_estoque > 0
+                ORDER BY data_de_cadastro ASC
             `, [isoDate]);
 
             res.json({
@@ -48,16 +43,52 @@ export function registerReportRoutes(app: Express, db: Database) {
         }
     });
 
-    app.get('/reports/products/low-stock', dbCheck, async (req: Request, res: Response) => {
+    app.get('/reports/procurement/suggested', dbCheck, async (req: Request, res: Response) => {
         try {
-            const products = await db.all(`
-                SELECT nome, quantidade_em_estoque, preco FROM products 
-                WHERE quantidade_em_estoque <= 5 AND ativo = 1
-                ORDER BY quantidade_em_estoque ASC
+            const productsToBuy = await db.all(`
+                SELECT 
+                    nome, 
+                    quantidade_em_estoque, 
+                    estoque_minimo,
+                    (estoque_minimo - quantidade_em_estoque) as necessidade_reposicao
+                FROM products 
+                WHERE ativo = 1 AND quantidade_em_estoque <= estoque_minimo
+                ORDER BY (estoque_minimo - quantidade_em_estoque) DESC
             `);
-            res.json({ count: products.length, products });
+            res.json(productsToBuy);
         } catch (error) {
-            res.status(500).json({ error: 'Erro interno' });
+            res.status(500).json({ error: 'Erro ao gerar relatório de compras.' });
+        }
+    });
+
+    app.get('/reports/products/performance', dbCheck, async (req: Request, res: Response) => {
+        const { startDate, endDate } = req.query;
+        try {
+            const sales = await db.all(`
+                SELECT itens FROM sales 
+                WHERE data BETWEEN ? AND ? AND status_venda = 'Concluída'
+            `, [startDate || '1970-01-01', endDate || '9999-12-31']);
+
+            const performance: Record<number, { nome: string, total: number }> = {};
+
+            sales.forEach(sale => {
+                const itens = JSON.parse(sale.itens);
+                itens.forEach((item: any) => {
+                    const id = item.produtoId;
+                    if (!performance[id]) {
+                        performance[id] = { nome: item.nomeProduto, total: 0 };
+                    }
+                    performance[id].total += item.quantidade;
+                });
+            });
+
+            const result = Object.values(performance).sort((a, b) => b.total - a.total);
+            res.json({
+                bestSellers: result.slice(0, 10),
+                worstSellers: [...result].reverse().slice(0, 10)
+            });
+        } catch (error) {
+            res.status(500).json({ error: 'Erro ao processar performance.' });
         }
     });
 
@@ -68,18 +99,6 @@ export function registerReportRoutes(app: Express, db: Database) {
                 FROM sales GROUP BY status_venda
             `);
             res.json(report);
-        } catch (error) {
-            res.status(500).json({ error: 'Erro interno' });
-        }
-    });
-
-    app.get('/reports/sales/ranking', dbCheck, async (req: Request, res: Response) => {
-        try {
-            const ranking = await db.all(`
-                SELECT cliente as item_nome, COUNT(id) as total_vendas, SUM(valor_total) as receita
-                FROM sales GROUP BY cliente ORDER BY total_vendas DESC
-            `);
-            res.json(ranking);
         } catch (error) {
             res.status(500).json({ error: 'Erro interno' });
         }
