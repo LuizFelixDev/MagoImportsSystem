@@ -1,40 +1,36 @@
 import { Express, Request, Response } from 'express';
 import { Pool } from 'pg';
+import { z } from 'zod';
+import { authMiddleware, adminMiddleware } from '../middleware/auth.js';
 
-interface Product {
-    id?: number;
-    nome: string;
-    descricao?: string;
-    categoria?: string;
-    subcategoria?: string;
-    marca?: string;
-    modelo?: string;
-    material?: string;
-    cor?: string;
-    tamanho?: string;
-    quantidade_em_estoque: number;
-    estoque_minimo: number;
-    preco: number;
-    preco_promocional?: number;
-    peso?: number;
-    imagens?: string[];
-    data_de_cadastro?: string;
-    ativo: 0 | 1;
-}
-
-const checkDb = (db: Pool) => (req: Request, res: Response, next: Function) => {
-    if (!db) return res.status(503).json({ error: 'Database connection error.' });
-    next();
-};
+const ProductSchema = z.object({
+    nome: z.string().min(1),
+    descricao: z.string().optional(),
+    categoria: z.string().optional(),
+    subcategoria: z.string().optional(),
+    marca: z.string().optional(),
+    modelo: z.string().optional(),
+    material: z.string().optional(),
+    cor: z.string().optional(),
+    tamanho: z.string().optional(),
+    quantidade_em_estoque: z.number().int().nonnegative(),
+    estoque_minimo: z.number().int().nonnegative(),
+    preco: z.number().positive(),
+    preco_promocional: z.number().positive().optional(),
+    peso: z.number().positive().optional(),
+    imagens: z.array(z.string()).optional(),
+    ativo: z.union([z.literal(0), z.literal(1)]).default(1)
+});
 
 export function registerProductRoutes(app: Express, db: Pool) {
-    const dbCheck = checkDb(db);
+    app.post('/products', authMiddleware, adminMiddleware, async (req: Request, res: Response) => {
+        const validation = ProductSchema.safeParse(req.body);
+        if (!validation.success) return res.status(400).json(validation.error);
 
-    app.post('/products', dbCheck, async (req: Request<{}, {}, Product>, res: Response) => {
         const { 
             nome, descricao, categoria, subcategoria, marca, modelo, material, cor, tamanho, 
             quantidade_em_estoque, estoque_minimo, preco, preco_promocional, peso, imagens, ativo 
-        } = req.body;
+        } = validation.data;
         
         const data_de_cadastro = new Date().toISOString();
         const imagensJson = imagens ? JSON.stringify(imagens) : null;
@@ -56,7 +52,7 @@ export function registerProductRoutes(app: Express, db: Pool) {
         }
     });
 
-    app.get('/products', dbCheck, async (req: Request, res: Response) => {
+    app.get('/products', authMiddleware, async (req: Request, res: Response) => {
         try {
             const result = await db.query('SELECT * FROM products');
             res.json(result.rows);
@@ -65,26 +61,12 @@ export function registerProductRoutes(app: Express, db: Pool) {
         }
     });
 
-    app.get('/products/:id', dbCheck, async (req: Request<{ id: string }>, res: Response) => {
-        try {
-            const result = await db.query('SELECT * FROM products WHERE id = $1', [req.params.id]);
-            if (result.rows.length > 0) {
-                const product = result.rows[0];
-                if (product.imagens) product.imagens = JSON.parse(product.imagens);
-                res.json(product);
-            } else {
-                res.status(404).json({ error: 'Produto não encontrado.' });
-            }
-        } catch (error) {
-            res.status(500).json({ error: 'Erro ao buscar produto.' });
-        }
-    });
-
-    app.put('/products/:id', dbCheck, async (req: Request<{ id: string }>, res: Response) => {
-        const updates = req.body as Partial<Product>;
+    app.put('/products/:id', authMiddleware, adminMiddleware, async (req: Request, res: Response) => {
+        const updates = req.body;
         const fields = Object.keys(updates).filter(key => key !== 'id');
-        const values = fields.map(key => key === 'imagens' ? JSON.stringify((updates as any)[key]) : (updates as any)[key]);
-        
+        if (fields.length === 0) return res.status(400).json({ error: 'Nenhum campo para atualizar.' });
+
+        const values = fields.map(key => key === 'imagens' ? JSON.stringify(updates[key]) : updates[key]);
         const setClause = fields.map((field, index) => `${field} = $${index + 1}`).join(', ');
         values.push(req.params.id);
 
@@ -96,9 +78,9 @@ export function registerProductRoutes(app: Express, db: Pool) {
         }
     });
 
-    app.delete('/products/:id', dbCheck, async (req: Request<{ id: string }>, res: Response) => {
+    app.delete('/products/:id', authMiddleware, adminMiddleware, async (req: Request, res: Response) => {
         try {
-            const result = await db.query('DELETE FROM products WHERE id = $1', [req.params.id]);
+            await db.query('DELETE FROM products WHERE id = $1', [req.params.id]);
             res.status(204).send();
         } catch (error) {
             res.status(500).json({ error: 'Erro ao excluir.' });

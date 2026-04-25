@@ -1,23 +1,16 @@
 {
   "name": "magoimportssystem",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
   "type": "module",
   "scripts": {
-    "start:dev": "tsx watch src/app.ts"
+    "start:dev": "tsx watch src/app.ts",
+    "build": "tsup src/app.ts --format esm --clean --minify",
+    "start": "node dist/app.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/LuizFelixDev/MagoImportsSystem.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/LuizFelixDev/MagoImportsSystem/issues"
-  },
-  "homepage": "https://github.com/LuizFelixDev/MagoImportsSystem#readme",
   "devDependencies": {
     "@types/express": "^5.0.5",
     "@types/jsonwebtoken": "^9.0.10",
@@ -35,6 +28,7 @@
     "google-auth-library": "^10.5.0",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.3",
-    "pg": "^8.20.0"
+    "pg": "^8.20.0",
+    "zod": "^3.25.76"
   }
 }

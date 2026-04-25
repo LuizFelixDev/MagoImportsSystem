@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import * as helmet from 'helmet';
 import cors from 'cors';
 import 'dotenv/config';
@@ -9,8 +9,10 @@ const app = express();
 const PORT = process.env.PORT || 2020;
 
 app.use((helmet as any).default());
-app.use(express.json({ limit: '50mb' }));
-app.use(cors());
+app.use(express.json({ limit: '10mb' }));
+app.use(cors({
+    origin: process.env.FRONTEND_URL || '*'
+}));
 
 async function startServer() {
   try {
@@ -19,10 +21,12 @@ async function startServer() {
     setupRoutes(app, db);
 
     app.get('/', (req: Request, res: Response) => {
-      res.status(200).json({
-        message: 'Mago Imports API Online',
-        status: 'online'
-      });
+      res.status(200).json({ message: 'Mago Imports API Online', status: 'online' });
+    });
+
+    app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+        console.error(err.stack);
+        res.status(500).json({ error: 'Erro interno no servidor.' });
     });
 
     app.listen(PORT, () => {
