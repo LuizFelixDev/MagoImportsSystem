@@ -1,18 +1,19 @@
 import { Express } from 'express';
-import { Database } from 'sqlite';
+import { Pool } from 'pg';
 import jwt from 'jsonwebtoken';
 
-export function registerUserRoutes(app: Express, db: Database) {
+export function registerUserRoutes(app: Express, db: Pool) {
     app.post('/auth/google', async (req, res) => {
         const { email, nome, foto, google_id } = req.body;
         try {
             if (!email) return res.status(400).json({ error: 'Email obrigatório' });
             
-            let user = await db.get('SELECT id, status FROM users WHERE email = ?', [email]);
+            const result = await db.query('SELECT id, status FROM users WHERE email = $1', [email]);
+            let user = result.rows[0];
 
             if (!user) {
-                await db.run(
-                    `INSERT INTO users (id, email, nome, foto, google_id, status) VALUES (?, ?, ?, ?, ?, 'pendente')`,
+                await db.query(
+                    `INSERT INTO users (id, email, nome, foto, google_id, status) VALUES ($1, $2, $3, $4, $5, 'pendente')`,
                     [google_id, email, nome, foto, google_id]
                 );
                 return res.status(403).json({ message: 'Aguarde aprovação', status: 'pendente' });
@@ -36,8 +37,8 @@ export function registerUserRoutes(app: Express, db: Database) {
 
     app.get('/admin/users/pending', async (req, res) => {
         try {
-            const pending = await db.all("SELECT * FROM users WHERE status = 'pendente'");
-            res.status(200).json(pending);
+            const result = await db.query("SELECT * FROM users WHERE status = 'pendente'");
+            res.status(200).json(result.rows);
         } catch (error) {
             res.status(500).json({ error: 'Erro ao buscar' });
         }
@@ -47,9 +48,9 @@ export function registerUserRoutes(app: Express, db: Database) {
         const { id, action } = req.body;
         try {
             if (action === 'aprovado') {
-                await db.run('UPDATE users SET status = ? WHERE id = ?', ['aprovado', id]);
+                await db.query('UPDATE users SET status = $1 WHERE id = $2', ['aprovado', id]);
             } else {
-                await db.run('DELETE FROM users WHERE id = ?', [id]);
+                await db.query('DELETE FROM users WHERE id = $1', [id]);
             }
             res.status(200).json({ message: 'Sucesso' });
         } catch (error) {

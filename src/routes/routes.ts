@@ -1,13 +1,13 @@
 import { Express } from 'express';
-import { Database } from 'sqlite';
+import { Pool } from 'pg';
 import { registerProductRoutes } from './products.js';
-import { registerSalesRoutes } from './sales.js'; 
-import { registerReportRoutes } from './reports.js'; 
-import { registerUserRoutes } from './users.js'; 
+import { registerSalesRoutes } from './sales.js';
+import { registerUserRoutes } from './users.js';
+import { registerReportRoutes } from './reports.js';
 
-export function setupRoutes(app: Express, db: Database) {
+export function setupRoutes(app: Express, db: Pool) {
     registerProductRoutes(app, db);
-    registerSalesRoutes(app, db); 
-    registerReportRoutes(app, db); 
-    registerUserRoutes(app, db); 
+    registerSalesRoutes(app, db);
+    registerUserRoutes(app, db);
+    registerReportRoutes(app, db);
 }
