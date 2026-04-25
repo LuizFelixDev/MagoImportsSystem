@@ -36,10 +36,6 @@ export function registerProductRoutes(app: Express, db: Pool) {
             quantidade_em_estoque, estoque_minimo, preco, preco_promocional, peso, imagens, ativo 
         } = req.body;
         
-        if (!nome || typeof preco !== 'number' || typeof quantidade_em_estoque !== 'number' || typeof ativo !== 'number') {
-            return res.status(400).json({ error: 'Campos obrigatórios ausentes.' });
-        }
-
         const data_de_cadastro = new Date().toISOString();
         const imagensJson = imagens ? JSON.stringify(imagens) : null;
         
@@ -54,7 +50,6 @@ export function registerProductRoutes(app: Express, db: Pool) {
                 nome, descricao, categoria, subcategoria, marca, modelo, material, cor, tamanho,
                 quantidade_em_estoque, estoque_minimo, preco, preco_promocional, peso, imagensJson, data_de_cadastro, ativo
             ]);
-            
             res.status(201).json(result.rows[0]);
         } catch (error) {
             res.status(500).json({ error: 'Erro ao cadastrar produto.' });
@@ -85,16 +80,28 @@ export function registerProductRoutes(app: Express, db: Pool) {
         }
     });
 
+    app.put('/products/:id', dbCheck, async (req: Request<{ id: string }>, res: Response) => {
+        const updates = req.body as Partial<Product>;
+        const fields = Object.keys(updates).filter(key => key !== 'id');
+        const values = fields.map(key => key === 'imagens' ? JSON.stringify((updates as any)[key]) : (updates as any)[key]);
+        
+        const setClause = fields.map((field, index) => `${field} = $${index + 1}`).join(', ');
+        values.push(req.params.id);
+
+        try {
+            const result = await db.query(`UPDATE products SET ${setClause} WHERE id = $${values.length} RETURNING *`, values);
+            res.json(result.rows[0]);
+        } catch (error) {
+            res.status(500).json({ error: 'Erro ao atualizar.' });
+        }
+    });
+
     app.delete('/products/:id', dbCheck, async (req: Request<{ id: string }>, res: Response) => {
         try {
             const result = await db.query('DELETE FROM products WHERE id = $1', [req.params.id]);
-            if (result.rowCount && result.rowCount > 0) {
-                res.status(204).send();
-            } else {
-                res.status(404).json({ error: 'Produto não encontrado.' });
-            }
+            res.status(204).send();
         } catch (error) {
-            res.status(500).json({ error: 'Erro ao excluir produto.' });
+            res.status(500).json({ error: 'Erro ao excluir.' });
         }
     });
 }
