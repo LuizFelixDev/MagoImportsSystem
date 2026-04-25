@@ -10,8 +10,12 @@ const PORT = process.env.PORT || 2020;
 
 app.use((helmet as any).default());
 app.use(express.json({ limit: '10mb' }));
+
 app.use(cors({
-    origin: process.env.FRONTEND_URL || '*'
+    origin: [
+        'https://mago-imports-system.vercel.app',
+        process.env.FRONTEND_URL || ''
+    ].filter(Boolean)
 }));
 
 async function startServer() {
