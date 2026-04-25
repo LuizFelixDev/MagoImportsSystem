@@ -3,11 +3,13 @@ import { openDb } from './configDB.js';
 import { setupRoutes } from './routes/routes.js';
 import { Database } from 'sqlite';
 import cors from 'cors';
+import helmet from 'helmet';
+import 'dotenv/config';
 
 const app = express();
 const PORT = process.env.PORT || 2020; 
 
-// AUMENTO DO LIMITE: Adicionado { limit: '50mb' } para suportar imagens Base64 grandes
+app.use(helmet());
 app.use(express.json({ limit: '50mb' }));
 app.use(cors());
 
@@ -17,20 +19,16 @@ async function startServer() {
     console.log('Banco de Dados inicializado com sucesso.');
 
     setupRoutes(app, db);
-    console.log('Todas as rotas (CRUDs) registradas com sucesso.');
 
     app.get('/', (req: Request, res: Response) => {
       res.status(200).json({
-        message: 'API TypeScript em execução!',
-        status: 'online',
-        database: 'conectado'
+        message: 'API TypeScript Protegida!',
+        status: 'online'
       });
     });
 
     app.listen(PORT, () => {
       console.log(`Servidor rodando na porta ${PORT}`);
-      console.log(`Rotas de CRUD para Produtos disponíveis em http://localhost:${PORT}/products`);
-      console.log(`Rotas de CRUD para Vendas disponíveis em http://localhost:${PORT}/sales`);
     });
 
   } catch (error) {

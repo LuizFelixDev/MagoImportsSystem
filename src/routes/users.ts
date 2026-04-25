@@ -1,16 +1,24 @@
 import { Express } from 'express';
 import { Database } from 'sqlite';
+import { OAuth2Client } from 'google-auth-library';
+import jwt from 'jsonwebtoken';
+import { authMiddleware, adminMiddleware } from '../middleware/auth.js';
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 export function registerUserRoutes(app: Express, db: Database) {
     app.post('/auth/google', async (req, res) => {
-        const { token } = req.body;
+        const { idToken } = req.body;
         try {
-            const googleRes = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${token}`);
-            const payload = await googleRes.json();
+            const ticket = await client.verifyIdToken({
+                idToken,
+                audience: process.env.GOOGLE_CLIENT_ID,
+            });
+            const payload = ticket.getPayload();
 
-            if (!payload.email) return res.status(401).json({ error: 'Token inválido' });
+            if (!payload || !payload.email) return res.status(401).json({ error: 'Token inválido' });
             
-            const user = await db.get('SELECT status FROM users WHERE email = ?', [payload.email]);
+            let user = await db.get('SELECT id, status FROM users WHERE email = ?', [payload.email]);
 
             if (!user) {
                 await db.run(
@@ -24,13 +32,19 @@ export function registerUserRoutes(app: Express, db: Database) {
                 return res.status(403).json({ error: 'Acesso pendente de aprovação.' });
             }
 
-            res.status(200).json({ user: payload, status: user.status });
+            const token = jwt.sign(
+                { id: user.id, status: user.status }, 
+                process.env.JWT_SECRET as string, 
+                { expiresIn: '7d' }
+            );
+
+            res.status(200).json({ token, user: payload, status: user.status });
         } catch (error) {
             res.status(500).json({ error: 'Erro interno' });
         }
     });
 
-    app.get('/admin/users/pending', async (req, res) => {
+    app.get('/admin/users/pending', authMiddleware, adminMiddleware, async (req, res) => {
         try {
             const pending = await db.all("SELECT * FROM users WHERE status = 'pendente'");
             res.status(200).json(pending);
@@ -39,7 +53,7 @@ export function registerUserRoutes(app: Express, db: Database) {
         }
     });
 
-    app.post('/admin/users/decide', async (req, res) => {
+    app.post('/admin/users/decide', authMiddleware, adminMiddleware, async (req, res) => {
         const { id, action } = req.body;
         try {
             if (action === 'aprovado') {
