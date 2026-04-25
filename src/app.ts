@@ -12,10 +12,11 @@ app.use((helmet as any).default());
 app.use(express.json({ limit: '10mb' }));
 
 app.use(cors({
-    origin: [
-        'https://mago-imports-system.vercel.app',
-        process.env.FRONTEND_URL || ''
-    ].filter(Boolean)
+  origin: [
+      'https://mago-imports-system.vercel.app',
+      'https://mago-imports-interface.vercel.app',
+      'http://localhost:3000'
+  ].filter(Boolean)
 }));
 
 async function startServer() {
