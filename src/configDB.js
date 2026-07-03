@@ -2,8 +2,16 @@ import pg from 'pg';
 const { Pool } = pg;
 
 export async function openDb() {
+  const rawUrl = process.env.POSTGRES_URL;
+  if (!rawUrl) {
+    console.error("DEBUG: POSTGRES_URL is undefined or empty");
+  } else {
+    const masked = rawUrl.replace(/:([^:@]+)@/, ':***@');
+    console.log("DEBUG: POSTGRES_URL value is:", masked);
+  }
+
   const pool = new Pool({
-    connectionString: process.env.POSTGRES_URL,
+    connectionString: rawUrl,
     ssl: {
       rejectUnauthorized: false
     }
