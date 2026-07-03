@@ -38,6 +38,7 @@ async function startServer() {
       console.log(`Server running on port ${PORT}`);
     });
   } catch (error) {
+    console.error("Erro crítico na inicialização:", error);
     process.exit(1);
   }
 }
