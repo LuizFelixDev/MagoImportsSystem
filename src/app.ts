@@ -5,6 +5,7 @@ import 'dotenv/config';
 import { openDb } from './configDB.js';
 import { setupRoutes } from './routes/routes.js';
 
+
 const app = express();
 const PORT = process.env.PORT || 2020;
 
