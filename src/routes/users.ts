@@ -30,8 +30,9 @@ export function registerUserRoutes(app: Express, db: Pool) {
             );
 
             res.status(200).json({ token, email, status: user.status });
-        } catch (error) {
-            res.status(500).json({ error: 'Erro interno' });
+        } catch (error: any) {
+            console.error("Erro em /auth/google:", error);
+            res.status(500).json({ error: 'Erro interno', details: error.message || error });
         }
     });
 
