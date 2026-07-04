@@ -16,6 +16,7 @@ app.use(cors({
   origin: [
       'https://mago-imports-system.vercel.app',
       'https://mago-imports-interface.vercel.app',
+      'https://magoimportsinterface.vercel.app',
       'http://localhost:3000'
   ].filter(Boolean)
 }));
