@@ -44,7 +44,19 @@ export async function openDb() {
     `);
 
     await client.query(`
+      ALTER TABLE products ADD COLUMN IF NOT EXISTS descricao TEXT;
+      ALTER TABLE products ADD COLUMN IF NOT EXISTS categoria TEXT;
+      ALTER TABLE products ADD COLUMN IF NOT EXISTS subcategoria TEXT;
+      ALTER TABLE products ADD COLUMN IF NOT EXISTS marca TEXT;
+      ALTER TABLE products ADD COLUMN IF NOT EXISTS modelo TEXT;
+      ALTER TABLE products ADD COLUMN IF NOT EXISTS material TEXT;
+      ALTER TABLE products ADD COLUMN IF NOT EXISTS cor TEXT;
+      ALTER TABLE products ADD COLUMN IF NOT EXISTS tamanho TEXT;
       ALTER TABLE products ADD COLUMN IF NOT EXISTS estoque_minimo INTEGER NOT NULL DEFAULT 0;
+      ALTER TABLE products ADD COLUMN IF NOT EXISTS preco_promocional REAL;
+      ALTER TABLE products ADD COLUMN IF NOT EXISTS peso REAL;
+      ALTER TABLE products ADD COLUMN IF NOT EXISTS imagens TEXT;
+      ALTER TABLE products ADD COLUMN IF NOT EXISTS ativo INTEGER NOT NULL DEFAULT 1;
     `);
 
     await client.query(`
