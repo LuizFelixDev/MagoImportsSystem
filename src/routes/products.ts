@@ -48,6 +48,7 @@ export function registerProductRoutes(app: Express, db: Pool) {
             ]);
             res.status(201).json(result.rows[0]);
         } catch (error) {
+            console.error("Error during product registration:", error);
             res.status(500).json({ error: 'Erro ao cadastrar produto.' });
         }
     });
@@ -57,6 +58,7 @@ export function registerProductRoutes(app: Express, db: Pool) {
             const result = await db.query('SELECT * FROM products');
             res.json(result.rows);
         } catch (error) {
+            console.error("Error during products fetch:", error);
             res.status(500).json({ error: 'Erro ao buscar produtos.' });
         }
     });
@@ -74,6 +76,7 @@ export function registerProductRoutes(app: Express, db: Pool) {
             const result = await db.query(`UPDATE products SET ${setClause} WHERE id = $${values.length} RETURNING *`, values);
             res.json(result.rows[0]);
         } catch (error) {
+            console.error("Error during product update:", error);
             res.status(500).json({ error: 'Erro ao atualizar.' });
         }
     });
@@ -83,6 +86,7 @@ export function registerProductRoutes(app: Express, db: Pool) {
             await db.query('DELETE FROM products WHERE id = $1', [req.params.id]);
             res.status(204).send();
         } catch (error) {
+            console.error("Error during product deletion:", error);
             res.status(500).json({ error: 'Erro ao excluir.' });
         }
     });

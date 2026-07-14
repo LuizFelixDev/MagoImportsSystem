@@ -44,6 +44,10 @@ export async function openDb() {
     `);
 
     await client.query(`
+      ALTER TABLE products ADD COLUMN IF NOT EXISTS estoque_minimo INTEGER NOT NULL DEFAULT 0;
+    `);
+
+    await client.query(`
       CREATE TABLE IF NOT EXISTS sales (
         id SERIAL PRIMARY KEY,
         data TEXT NOT NULL,
